@@ -8,7 +8,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Movement Settings")]
     public float moveSpeed = 5f;
-    public float jumpForce = 3f;
+    public float jumpForce = 1f;
     public float dashSpeed = 15f;
     public float dashTime = 0.2f;
 
