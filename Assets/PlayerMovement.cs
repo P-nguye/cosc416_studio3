@@ -1,97 +1,87 @@
 using UnityEngine;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
-    public float speed = 7f;
-    public float jumpForce = 15f;
-    private bool isGrounded;
     private Rigidbody rb;
-    public float maxJumpTime = 0.5f; // Maximum duration to hold the jump
-    private float jumpTimeCounter;
-    private bool isJumping;
-    public float fallAcceleration = 20f; // Acceleration rate for falling
+    private bool canDoubleJump;
+    private bool isDashing;
 
+    [Header("Movement Settings")]
+    public float moveSpeed = 5f;
+    public float jumpForce = 5f;
+    public float dashSpeed = 15f;
+    public float dashTime = 0.2f;
 
+    private float horizontal;
+    private float vertical;
+    private bool isGrounded;
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>();  // Get Rigidbody component
-        Debug.Log("PlayerMovement script initialized.");
+        rb = GetComponent<Rigidbody>();
     }
 
     void Update()
     {
-        Move();
-        Jump();
-        ApplyFallAcceleration();
+        // Get input from keyboard
+        horizontal = Input.GetAxis("Horizontal");
+        vertical = Input.GetAxis("Vertical");
+
+        if (Input.GetKeyDown(KeyCode.Space)) Jump();
+        if (Input.GetKeyDown(KeyCode.LeftShift)) Dash();
+    }
+
+    void FixedUpdate()
+    {
+        if (!isDashing)
+        {
+            Move();
+        }
     }
 
     void Move()
     {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-
-        Debug.Log($"Movement Input - Horizontal: {horizontal}, Vertical: {vertical}");
-
-        Vector3 moveDirection = new Vector3(horizontal, 0f, vertical).normalized;
-
-        if (moveDirection.magnitude >= 0.1f)
-        {
-            Debug.Log("Player is moving...");
-            rb.linearVelocity = moveDirection * speed;
-        }
-        else
-        {
-            // Stop movement when no keys are pressed
-            rb.linearVelocity = Vector3.zero;
-        }
+        Vector3 movement = new Vector3(horizontal, 0, vertical).normalized * moveSpeed;
+        rb.linearVelocity = new Vector3(movement.x, rb.linearVelocity.y, movement.z);
     }
 
     void Jump()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        if (isGrounded)
         {
-            isJumping = true;
-            jumpTimeCounter = 0f;
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
+            canDoubleJump = true;
         }
-
-        if (Input.GetKey(KeyCode.Space) && isJumping)
+        else if (canDoubleJump)
         {
-            if (jumpTimeCounter < maxJumpTime)
-            {
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
-                jumpTimeCounter += Time.deltaTime;
-            }
-            else
-            {
-                isJumping = false;
-            }
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
+            canDoubleJump = false;
         }
-
-        if (Input.GetKeyUp(KeyCode.Space))
-        {
-            isJumping = false;
-        }
-        
     }
-    void ApplyFallAcceleration()
+
+    void Dash()
     {
-        if (!isGrounded && rb.linearVelocity.y < 0)
+        if (!isDashing)
         {
-            // Incrementally increase the downward velocity
-            rb.linearVelocity += Vector3.up * Physics.gravity.y * (fallAcceleration - 1) * Time.deltaTime;
+            isDashing = true;
+            rb.linearVelocity = transform.forward * dashSpeed;
+            Invoke("StopDash", dashTime);
         }
+    }
+
+    void StopDash()
+    {
+        isDashing = false;
     }
 
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Ground"))
         {
-            Debug.Log("Player landed on the ground.");
             isGrounded = true;
         }
     }
+
     void OnCollisionExit(Collision collision)
     {
         if (collision.gameObject.CompareTag("Ground"))
