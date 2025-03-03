@@ -1,10 +1,10 @@
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
-    public Text scoreText;
+    public TMP_Text scoreText; // Use TMP_Text instead of Text
     private int score = 0;
 
     void Awake()
@@ -15,13 +15,21 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            Destroy(gameObject); // Prevent duplicates
+            Destroy(gameObject);
         }
     }
 
     public void AddScore(int amount)
     {
         score += amount;
-        scoreText.text = "Score: " + score;
+
+        if (scoreText != null)
+        {
+            scoreText.text = "Score: " + score;
+        }
+        else
+        {
+            Debug.LogError("ScoreText is not assigned in GameManager!");
+        }
     }
 }

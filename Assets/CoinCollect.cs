@@ -4,16 +4,16 @@ public class CoinCollect : MonoBehaviour
 {
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player")) // Ensure the player has the correct tag
+        if (other.CompareTag("Player")) // Check if Player touches the coin
         {
-            if (GameManager.instance != null) // Prevent null errors
+            if (GameManager.instance != null) // Ensure GameManager exists
             {
                 GameManager.instance.AddScore(1); // Increase score
-                Destroy(gameObject); // Destroy the collected coin
+                Destroy(gameObject); // Remove the collected coin
             }
             else
             {
-                Debug.LogError("GameManager.instance is null! Make sure GameManager is in the scene.");
+                Debug.LogError("GameManager.instance is null! Make sure it's in the scene.");
             }
         }
     }
